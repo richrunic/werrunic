@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUNIC — Photography · Modeling · Producing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,500;0,600;1,400&family=Cormorant+SC:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap');
+
+  :root{
+    --basalt:#fafaf8;
+    --basalt-2:#f0efeb;
+    --bone:#0d0d0d;
+    --bone-dim:#3a3a3a;
+    --ash:#6e6a63;
+    --ash-dim:#b7b2a6;
+    --copper:#c41e2a;
+    --copper-dim:#8c1119;
+    --red-ghost:#c41e2a;
+    --ink-ghost:#0d0d0d;
+    --rule: rgba(13,13,13,0.14);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--basalt);
+    color:var(--bone);
+    font-family:'Jost', sans-serif;
+    font-weight:300;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{background:var(--copper); color:#fff;}
+
+  a{color:inherit; text-decoration:none;}
+
+  /* grain overlay */
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:500;
+    opacity:0.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:200;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:24px 5vw;
+    background:rgba(250,250,248,0.86);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--rule);
+  }
+  .brand-mark{
+    font-family:'Cormorant SC', serif; font-weight:600;
+    font-size:20px; letter-spacing:0.35em;
+    color:var(--bone);
+  }
+  nav ul{
+    display:flex; gap:44px; list-style:none;
+  }
+  nav a{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--bone-dim);
+    position:relative;
+    transition:color .3s;
+  }
+  nav a::after{
+    content:'';
+    position:absolute; left:0; bottom:-6px;
+    width:0; height:1px; background:var(--copper);
+    transition:width .35s ease;
+  }
+  nav a:hover{color:var(--bone);}
+  nav a:hover::after{width:100%;}
+
+  .nav-toggle{display:none;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    height:100vh; min-height:680px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    overflow:hidden;
+    border-bottom:1px solid var(--rule);
+  }
+
+  .hero-field{
+    position:absolute; inset:0; z-index:0;
+    background:
+      radial-gradient(ellipse 90% 60% at 30% 20%, rgba(196,30,42,0.09), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 75% 80%, rgba(13,13,13,0.05), transparent 60%),
+      repeating-linear-gradient(115deg, rgba(13,13,13,0.02) 0px, rgba(13,13,13,0.02) 1px, transparent 1px, transparent 3px),
+      var(--basalt);
+  }
+  .hero-field::before{
+    content:'';
+    position:absolute; inset:0;
+    background:
+      linear-gradient(180deg, transparent 55%, rgba(13,13,13,0.05) 100%);
+  }
+
+  .scanlines{
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(13,13,13,0.18) 0px, rgba(13,13,13,0.18) 1px, transparent 1px, transparent 3px);
+    opacity:0.18;
+    animation:scan-drift 9s linear infinite;
+  }
+  @keyframes scan-drift{ from{background-position-y:0;} to{background-position-y:120px;} }
+
+  .eyebrow{
+    position:relative; z-index:2;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.4em; text-transform:uppercase;
+    color:var(--ash);
+    margin-bottom:28px;
+  }
+
+  .wordmark-wrap{
+    position:relative; z-index:2;
+    cursor:default;
+  }
+  .wordmark{
+    font-family:'Cormorant SC', serif;
+    font-weight:600;
+    font-size:clamp(64px, 14vw, 168px);
+    letter-spacing:0.14em;
+    line-height:1;
+    color:var(--bone);
+    position:relative;
+    display:inline-block;
+  }
+  .wordmark .glitch-layer{
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    opacity:0; pointer-events:none;
+  }
+  .wordmark-wrap:hover .wordmark{ animation:glitch-jitter 0.6s steps(2,end) infinite; }
+  .wordmark-wrap:hover .layer-red{ opacity:0.8; color:var(--red-ghost); animation:glitch-shift-red 0.6s steps(2,end) infinite; }
+  .wordmark-wrap:hover .layer-ink{ opacity:0.55; color:var(--ink-ghost); animation:glitch-shift-ink 0.6s steps(2,end) infinite; }
+
+  @keyframes glitch-jitter{
+    0%{transform:translate(0,0);}
+    20%{transform:translate(-1px,0.5px);}
+    40%{transform:translate(1px,-0.5px);}
+    60%{transform:translate(-0.5px,0);}
+    80%{transform:translate(0.5px,0.5px);}
+    100%{transform:translate(0,0);}
+  }
+  @keyframes glitch-shift-red{
+    0%{transform:translate(3px,0);} 50%{transform:translate(-2px,1px);} 100%{transform:translate(3px,-1px);}
+  }
+  @keyframes glitch-shift-ink{
+    0%{transform:translate(-3px,0);} 50%{transform:translate(2px,-1px);} 100%{transform:translate(-3px,1px);}
+  }
+
+  .runes{
+    position:relative; z-index:2;
+    margin-top:18px;
+    font-size:15px; letter-spacing:0.6em;
+    color:var(--ash);
+    font-family:'Cormorant', serif;
+  }
+
+  .hero-tagline{
+    position:relative; z-index:2;
+    max-width:520px;
+    margin:36px auto 0;
+    font-size:16px; line-height:1.7;
+    color:var(--bone-dim);
+    font-weight:300;
+  }
+
+  .scroll-cue{
+    position:absolute; bottom:36px; left:50%; transform:translateX(-50%);
+    z-index:2;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; letter-spacing:0.3em; text-transform:uppercase;
+    color:var(--ash);
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .scroll-cue .line{
+    width:1px; height:34px; background:linear-gradient(var(--copper), transparent);
+    animation:cue-pulse 2s ease-in-out infinite;
+  }
+  @keyframes cue-pulse{ 0%,100%{opacity:0.3;} 50%{opacity:1;} }
+
+  /* ---------- SECTION SHARED ---------- */
+  section{ position:relative; padding:140px 5vw; }
+  .section-head{
+    display:flex; align-items:baseline; gap:24px;
+    margin-bottom:64px;
+    border-bottom:1px solid var(--rule);
+    padding-bottom:28px;
+  }
+  .section-index{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--copper); letter-spacing:0.1em;
+  }
+  .section-title{
+    font-family:'Cormorant', serif; font-weight:500; font-style:italic;
+    font-size:clamp(28px,4vw,42px);
+    color:var(--bone);
+  }
+  .section-sub{
+    margin-left:auto;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--ash);
+    text-align:right;
+  }
+
+  /* ---------- STATEMENT ---------- */
+  .statement{
+    max-width:900px;
+    font-family:'Cormorant', serif; font-weight:300; font-style:italic;
+    font-size:clamp(22px,3vw,34px);
+    line-height:1.5;
+    color:var(--bone-dim);
+  }
+  .statement em{ color:var(--bone); font-style:normal; font-weight:500; }
+
+  /* ---------- DISCIPLINES / TABLETS ---------- */
+  .tablets{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    background:var(--rule);
+    border:1px solid var(--rule);
+  }
+  .tablet{
+    position:relative;
+    background:var(--basalt);
+    padding:56px 40px 48px;
+    min-height:420px;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+    transition:background .4s ease;
+  }
+  .tablet::before{
+    content:'';
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse at 30% 0%, rgba(196,30,42,0.10), transparent 55%);
+    opacity:0; transition:opacity .5s ease;
+  }
+  .tablet:hover::before{ opacity:1; }
+  .tablet:hover{ background:var(--basalt-2); }
+
+  .tablet-glyph{
+    font-family:'Cormorant', serif; font-size:13px; letter-spacing:0.5em;
+    color:var(--ash-dim);
+    margin-bottom:auto;
+  }
+  .tablet-number{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--copper);
+    letter-spacing:0.1em; margin-bottom:20px;
+  }
+  .tablet-title{
+    font-family:'Cormorant SC', serif; font-weight:600;
+    font-size:30px; letter-spacing:0.06em;
+    color:var(--bone);
+    margin:20px 0 18px;
+  }
+  .tablet-desc{
+    font-size:14.5px; line-height:1.75; color:var(--ash);
+    max-width:34ch;
+    margin-bottom:32px;
+  }
+  .tablet-link{
+    margin-top:auto;
+    font-family:'IBM Plex Mono', monospace; font-size:11px;
+    letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--bone-dim);
+    display:inline-flex; align-items:center; gap:10px;
+    padding-top:18px; border-top:1px solid var(--rule);
+    transition:color .3s, letter-spacing .3s;
+  }
+  .tablet-link .arrow{ transition:transform .3s ease; }
+  .tablet:hover .tablet-link{ color:var(--copper); letter-spacing:0.22em; }
+  .tablet:hover .tablet-link .arrow{ transform:translateX(6px); }
+
+  @media (max-width:880px){
+    .tablets{ grid-template-columns:1fr; }
+  }
+
+  /* ---------- CORRUPTION STRIP (signature repeat) ---------- */
+  .corruption-strip{
+    height:120px;
+    position:relative;
+    display:flex; align-items:center;
+    overflow:hidden;
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    background:var(--basalt-2);
+  }
+  .corruption-track{
+    display:flex; white-space:nowrap;
+    animation:marquee 26s linear infinite;
+  }
+  .corruption-track span{
+    font-family:'Cormorant SC', serif; font-weight:600;
+    font-size:15px; letter-spacing:0.5em; text-transform:uppercase;
+    color:var(--ash-dim);
+    padding:0 34px;
+    display:inline-flex; align-items:center; gap:34px;
+  }
+  .corruption-track span::after{ content:'⟡'; color:var(--copper); font-size:10px; }
+  @keyframes marquee{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+  /* ---------- ABOUT / PROCESS ---------- */
+  .about-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:80px;
+    align-items:start;
+  }
+  .about-copy p{
+    font-size:15px; line-height:1.9; color:var(--ash);
+    max-width:52ch; margin-bottom:22px;
+  }
+  .about-copy strong{ color:var(--bone-dim); font-weight:500; }
+
+  .process-list{ list-style:none; }
+  .process-list li{
+    display:grid; grid-template-columns:50px 1fr;
+    gap:20px;
+    padding:22px 0;
+    border-bottom:1px solid var(--rule);
+  }
+  .process-list li:first-child{ border-top:1px solid var(--rule); }
+  .process-num{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--copper);
+    padding-top:4px;
+  }
+  .process-copy .p-title{
+    font-family:'Cormorant', serif; font-style:italic; font-size:20px;
+    color:var(--bone); margin-bottom:6px;
+  }
+  .process-copy .p-desc{ font-size:13.5px; color:var(--ash); line-height:1.7; max-width:40ch; }
+
+  @media (max-width:900px){
+    .about-grid{ grid-template-columns:1fr; gap:56px; }
+  }
+
+  /* ---------- CTA ---------- */
+  .cta{
+    text-align:center;
+    padding:160px 5vw;
+    position:relative;
+  }
+  .cta-eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.4em;
+    text-transform:uppercase; color:var(--ash); margin-bottom:26px;
+  }
+  .cta-title{
+    font-family:'Cormorant', serif; font-weight:300; font-style:italic;
+    font-size:clamp(30px,5vw,58px);
+    color:var(--bone); max-width:820px; margin:0 auto 44px; line-height:1.25;
+  }
+  .cta-title em{ color:var(--copper); font-style:normal; font-weight:500; }
+  .cta-actions{ display:flex; gap:20px; justify-content:center; flex-wrap:wrap; }
+  .btn{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;
+    padding:18px 34px;
+    border:1px solid var(--rule);
+    transition:all .35s ease;
+  }
+  .btn-primary{ background:var(--bone); color:var(--basalt); border-color:var(--bone); }
+  .btn-primary:hover{ background:var(--copper); border-color:var(--copper); color:#fff; }
+  .btn-ghost{ color:var(--bone-dim); border-color:var(--bone-dim); }
+  .btn-ghost:hover{ border-color:var(--copper); color:var(--copper); }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding:56px 5vw 40px;
+    border-top:1px solid var(--rule);
+    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:30px;
+  }
+  .footer-mark{
+    font-family:'Cormorant SC', serif; font-weight:600; font-size:16px; letter-spacing:0.3em; color:var(--bone-dim);
+  }
+  .footer-mark span{ display:block; font-family:'Cormorant', serif; font-size:10px; letter-spacing:0.4em; color:var(--ash-dim); margin-top:6px;}
+  .footer-links{ display:flex; gap:30px; }
+  .footer-links a{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ash); letter-spacing:0.1em; text-transform:uppercase;
+    transition:color .3s;
+  }
+  .footer-links a:hover{ color:var(--copper); }
+  .footer-meta{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--ash-dim); letter-spacing:0.05em;
+  }
+
+  /* reveal on scroll */
+  .reveal{ opacity:0; transform:translateY(24px); transition:opacity .8s ease, transform .8s ease; }
+  .reveal.is-visible{ opacity:1; transform:translateY(0); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  @media (max-width:720px){
+    nav ul{ gap:24px; }
+    header{ padding:22px 6vw; }
+    section{ padding:90px 6vw; }
+    .section-head{ flex-wrap:wrap; }
+    .section-sub{ margin-left:0; text-align:left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header>
+  <div class="brand-mark">RUNIC</div>
+  <nav>
+    <ul>
+      <li><a href="photography.html">Photography</a></li>
+      <li><a href="modeling.html">Modeling</a></li>
+      <li><a href="producing.html">Producing</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero" style="padding:0;">
+  <div class="hero-field"></div>
+  <div class="scanlines"></div>
+
+  <div class="eyebrow">werrunic.com — est. mark of the craft</div>
+
+  <div class="wordmark-wrap">
+    <span class="wordmark">
+      RUNIC
+      <span class="glitch-layer layer-red">RUNIC</span>
+      <span class="glitch-layer layer-ink">RUNIC</span>
+    </span>
+  </div>
+
+  <div class="runes">ᚱ · ᚢ · ᚾ · ᛁ · ᚲ</div>
+
+  <p class="hero-tagline">
+    An image is a mark cut into the moment — deliberate, permanent, legible only to those who know the alphabet. We carve them across photography, modeling, and production.
+  </p>
+
+  <div class="scroll-cue"><div class="line"></div>SCROLL</div>
+</section>
+
+<!-- STATEMENT -->
+<section class="reveal">
+  <p class="statement">
+    Runes were never decoration — <em>they were instructions cut to last.</em> We treat every frame the same way: composed with intent, exposed once, and built to survive the noise around it.
+  </p>
+</section>
+
+<!-- DISCIPLINES -->
+<section id="work" class="reveal">
+  <div class="section-head">
+    <span class="section-index">I.</span>
+    <h2 class="section-title">Three disciplines, one mark</h2>
+    <span class="section-sub">Select a craft</span>
+  </div>
+
+  <div class="tablets">
+    <a class="tablet" href="photography.html">
+      <div class="tablet-glyph">ᚨᛚᛁᚷᚾ — LIGHT</div>
+      <div class="tablet-number">01</div>
+      <div class="tablet-title">Photography</div>
+      <p class="tablet-desc">Editorial, portrait, and campaign work — shot on location or in studio, graded with a deliberate hand.</p>
+      <span class="tablet-link">View the work <span class="arrow">→</span></span>
+    </a>
+
+    <a class="tablet" href="modeling.html">
+      <div class="tablet-glyph">ᚠᛟᚱᛗ — FORM</div>
+      <div class="tablet-number">02</div>
+      <div class="tablet-title">Modeling</div>
+      <p class="tablet-desc">Representation and casting for editorial, runway, and commercial talent, built on real portfolios.</p>
+      <span class="tablet-link">Meet the roster <span class="arrow">→</span></span>
+    </a>
+
+    <a class="tablet" href="producing.html">
+      <div class="tablet-glyph">ᛒᛁᛚᛞ — BUILD</div>
+      <div class="tablet-number">03</div>
+      <div class="tablet-title">Producing</div>
+      <p class="tablet-desc">Full production from concept to delivery — locations, crew, timelines, and budgets, handled end to end.</p>
+      <span class="tablet-link">See how it runs <span class="arrow">→</span></span>
+    </a>
+  </div>
+</section>
+
+<!-- CORRUPTION STRIP -->
+<div class="corruption-strip">
+  <div class="corruption-track">
+    <span>PHOTOGRAPHY</span><span>MODELING</span><span>PRODUCING</span><span>PHOTOGRAPHY</span><span>MODELING</span><span>PRODUCING</span>
+    <span>PHOTOGRAPHY</span><span>MODELING</span><span>PRODUCING</span><span>PHOTOGRAPHY</span><span>MODELING</span><span>PRODUCING</span>
+  </div>
+</div>
+
+<!-- ABOUT / PROCESS -->
+<section id="about" class="reveal">
+  <div class="section-head">
+    <span class="section-index">II.</span>
+    <h2 class="section-title">How a mark gets cut</h2>
+    <span class="section-sub">Process</span>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-copy">
+      <p><strong>RUNIC</strong> is a small studio working across photography, modeling, and production — three crafts that are usually hired separately and rarely talk to each other.</p>
+      <p>We run all three under one roof so a shoot is planned, cast, shot, and delivered by people who were in the same room from day one. Fewer handoffs. Fewer things get lost in translation.</p>
+      <p>Based on-location and in-studio, working with brands, agencies, and independent talent who want work that holds up outside the feed it was made for.</p>
+    </div>
+
+    <ul class="process-list">
+      <li>
+        <span class="process-num">01</span>
+        <div class="process-copy">
+          <div class="p-title">Brief &amp; cast</div>
+          <div class="p-desc">We define the concept and, if needed, cast talent from our roster.</div>
+        </div>
+      </li>
+      <li>
+        <span class="process-num">02</span>
+        <div class="process-copy">
+          <div class="p-title">Plan &amp; scout</div>
+          <div class="p-desc">Locations, crew, schedule, and budget locked before anyone shows up.</div>
+        </div>
+      </li>
+      <li>
+        <span class="process-num">03</span>
+        <div class="process-copy">
+          <div class="p-title">Shoot</div>
+          <div class="p-desc">Directed on set, with the same eye that planned it running the day.</div>
+        </div>
+      </li>
+      <li>
+        <span class="process-num">04</span>
+        <div class="process-copy">
+          <div class="p-title">Deliver</div>
+          <div class="p-desc">Graded, sequenced, and handed off in the formats you'll actually use.</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- CTA / CONTACT -->
+<section id="contact" class="cta reveal">
+  <div class="cta-eyebrow">Start something</div>
+  <h2 class="cta-title">Tell us what needs <em>a mark cut into it</em> — a shoot, a campaign, a face.</h2>
+  <div class="cta-actions">
+    <a class="btn btn-primary" href="mailto:hello@werrunic.com">Email hello@werrunic.com</a>
+    <a class="btn btn-ghost" href="producing.html">See how we produce</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-mark">RUNIC<span>ᚱᚢᚾᛁᚲ · werrunic.com</span></div>
+  <div class="footer-links">
+    <a href="photography.html">Photography</a>
+    <a href="modeling.html">Modeling</a>
+    <a href="producing.html">Producing</a>
+    <a href="mailto:hello@werrunic.com">Contact</a>
+  </div>
+  <div class="footer-meta">© <span id="year"></span> RUNIC. All marks reserved.</div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.15});
+  revealEls.forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>
